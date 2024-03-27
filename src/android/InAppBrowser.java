@@ -434,20 +434,26 @@ public class InAppBrowser extends CordovaPlugin {
             HashMap<String, String> map = new HashMap<String, String>();
             StringTokenizer features = new StringTokenizer(optString, ",");
             StringTokenizer option;
-            while(features.hasMoreElements()) {
+            while (features.hasMoreElements()) {
                 option = new StringTokenizer(features.nextToken(), "=");
                 if (option.hasMoreElements()) {
                     String key = option.nextToken();
                     String value = option.nextToken();
-                    if (!customizableOptions.contains(key)) {
-                        value = value.equals("yes") || value.equals("no") ? value : "yes";
+                    if ("userAgent".equals(key)) {
+                        map.put(key, value);
+                    } else {
+                       if (!customizableOptions.contains(key)) {
+                            value = value.equals("yes") || value.equals("no") ? value : "yes";
+                        }
+                        map.put(key, value);
                     }
-                    map.put(key, value);
                 }
             }
             return map;
         }
     }
+
+
 
     /**
      * Display a new browser with the specified URL.
@@ -993,12 +999,17 @@ public class InAppBrowser extends CordovaPlugin {
 
                 String overrideUserAgent = preferences.getString("OverrideUserAgent", null);
                 String appendUserAgent = preferences.getString("AppendUserAgent", null);
-
-                if (overrideUserAgent != null) {
-                    settings.setUserAgentString(overrideUserAgent);
-                }
-                if (appendUserAgent != null) {
-                    settings.setUserAgentString(settings.getUserAgentString() + " " + appendUserAgent);
+                String customUserAgent = features.get("userAgent");
+                // customUserAgent overrides what's configured in the config.xml file.
+                if (customUserAgent != null) {
+                    settings.setUserAgentString(customUserAgent);
+                } else {
+                    if (overrideUserAgent != null) {
+                        settings.setUserAgentString(overrideUserAgent);
+                    }
+                    if (appendUserAgent != null) {
+                        settings.setUserAgentString(settings.getUserAgentString() + " " + appendUserAgent);
+                    }
                 }
 
                 //Toggle whether this is enabled or not!
